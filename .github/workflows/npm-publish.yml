@@ -6,6 +6,9 @@ on:
     # one promoted from a draft) is actually published, not just created.
     types: [ published ]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -16,7 +19,7 @@ jobs:
           version: 10.32.1
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
@@ -24,6 +27,9 @@ jobs:
   publish-npm:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4.4.0
@@ -31,10 +37,9 @@ jobs:
           version: 10.32.1
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: pnpm
           registry-url: https://registry.npmjs.org/
       - run: pnpm install --frozen-lockfile
-      - run: pnpm publish --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+      - run: pnpm check
+      - run: npm publish
